@@ -31,7 +31,7 @@ HashTable *symbolTable;
 %%
 
 program         : varDecls main funtions END {
-                        printf("%s\n", $1);
+                        printf("START\n%sSTOP\n", $1);
                         print_table(symbolTable);
                     }
                 ;
