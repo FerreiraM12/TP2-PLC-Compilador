@@ -16,13 +16,13 @@ HashTable *symbolTable;
 
 %union { char* str; int num; }
 
-%token FUNCTION VAR INT CHAR BOOLEAN VOID TTRUE TFALSE MAIN
+%token FUNCTION VAR INT CHAR BOOLEAN TTRUE TFALSE MAIN
 %token TNULL THIS LET DO IF ELSE WHILE RETURN END
 %token STRINGCONSTANT
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
 
-%type <str> expression varName varDecl varDecls 
+%type <str> expression varName varDecl varDecls ifStatement whileStatement letStatement statement statements main
 %type <num> constant
 %right '='
 %left  '+' '-'
@@ -30,14 +30,11 @@ HashTable *symbolTable;
 
 %%
 
-program         : varDecls main funtions END {
-                        printf("START\n%sSTOP\n", $1);
-                        print_table(symbolTable);
-                    }
+program         : varDecls main funtions END            { printf("START\n%s%sSTOP\n", $1,$2); print_table(symbolTable); }
                 ;
 
-varDecls        :                   { asprintf(&$$, "%s", "");}
-                | varDecls varDecl  { asprintf(&$$, "%s%s", $1, $2); }
+varDecls        :                                       { asprintf(&$$, "%s", "");}
+                | varDecls varDecl                      { asprintf(&$$, "%s%s", $1, $2); }
                 ;
 
 varDecl         : INT IDENTIFIER ';' {
@@ -53,15 +50,14 @@ varDecl         : INT IDENTIFIER ';' {
                         globalCount++;
                         
                     }
-                | INT IDENTIFIER '=' varName ';' {
-                        if (hasDuplicates(symbolTable, $4) == 0) return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $4);
+                | INT IDENTIFIER '=' expression ';' {
                         if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
-                        asprintf(&$$, "PUSHI 0\nPUSHG %d\nSTOREG %d\n", (ht_search(symbolTable, $4))->varPos, globalCount);
+                        asprintf(&$$, "PUSHI 0\n%sSTOREG %d\n", $4, globalCount);
                         ht_insert(symbolTable, $2, globalCount, "int");
                         globalCount++;
                     }
 
-main            : INT MAIN '(' ')' '{' statements '}'
+main            : INT MAIN '(' ')' '{' statements '}'   { asprintf(&$$, "%s", $6); }
                 ;
 
 funtions        : 
@@ -75,14 +71,14 @@ function        : INT IDENTIFIER '(' ')' '{' statements '}' {
                     }
                 ;
 
-statements      : 
-                | statements statement
+statements      :                                       { asprintf(&$$, "%s", ""); }
+                | statements statement                  { asprintf(&$$, "%s%s", $1, $2); }
                 ;
 
-statement       : ifStatement
-                | whileStatement
-                | letStatement
-                | varDecl
+statement       : ifStatement                           { asprintf(&$$, "%s", $1); }
+                | whileStatement                        { asprintf(&$$, "%s", $1); }
+                | letStatement                          { asprintf(&$$, "%s", $1); }
+                | varDecl                               { asprintf(&$$, "%s", $1); }
                 ;
 
 ifStatement     : IF '(' expression ')' '{' statements '}'
@@ -91,21 +87,26 @@ ifStatement     : IF '(' expression ')' '{' statements '}'
 whileStatement  : WHILE '(' expression ')' '{' statements '}'
                 ;
 
-letStatement    : LET varName '=' expression ';'    { printf("%s", $4); }
+letStatement    : LET varName '=' expression ';'    { 
+                        asprintf(&$$, "%sSTOREG %d\n", $4, ((ht_search(symbolTable, $2))->varPos));
+                    }
 
-expression      : constant                  { asprintf(&$$, "PUSHI %d\n", $1); }
-                /* TODO: lidar com o IDENTIFIER */
-                | '(' expression ')'        { asprintf(&$$, "%s", $2); }
-                | expression '+' expression { asprintf(&$$, "%s%sADD\n", $1, $3); }
-                | expression '-' expression { asprintf(&$$, "%s%sSUB\n", $1, $3); }
-                | expression '*' expression { asprintf(&$$, "%s%sMUL\n", $1, $3); }
-                | expression '/' expression { asprintf(&$$, "%s%sDIV\n", $1, $3); }
+expression      : constant                              { asprintf(&$$, "PUSHI %d\n", $1); }
+                | IDENTIFIER {
+                        if (hasDuplicates(symbolTable, $1) == 0) return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
+                        asprintf(&$$, "PUSHG %d\n", ((ht_search(symbolTable, $1))->varPos));
+                    }
+                | '(' expression ')'                    { asprintf(&$$, "%s", $2); }
+                | expression '+' expression             { asprintf(&$$, "%s%sADD\n", $1, $3); }
+                | expression '-' expression             { asprintf(&$$, "%s%sSUB\n", $1, $3); }
+                | expression '*' expression             { asprintf(&$$, "%s%sMUL\n", $1, $3); }
+                | expression '/' expression             { asprintf(&$$, "%s%sDIV\n", $1, $3); }
                 ;
 
-varName         : IDENTIFIER                { asprintf(&$$, "%s", $1); }
+varName         : IDENTIFIER                            { asprintf(&$$, "%s", $1); }
                 ;
 
-constant        : INTEGERCONSTANT { $$ = $1; }
+constant        : INTEGERCONSTANT                       { $$ = $1; }
                 ;
 
 
@@ -115,13 +116,6 @@ constant        : INTEGERCONSTANT { $$ = $1; }
 
 #include "lex.yy.c"
 
-int yyerror(const char *s) {
-    fprintf(stderr, "error: %s \n", s);
-    return 0;
-}
+int yyerror(const char *s) { fprintf(stderr, "%d: error: %s \n", yylineno, s); return 0; }
 
-int main() {
-    symbolTable = create_table(CAPACITY);
-    yyparse();
-    return(0);
-}
+int main() { symbolTable = create_table(CAPACITY); yyparse(); return(0); }

@@ -16,7 +16,6 @@ var                         { return VAR; }
 int                         { return INT; }
 char                        { return CHAR; }
 boolean                     { return BOOLEAN; }
-void                        { return VOID; }
 true                        { return TTRUE; }
 false                       { return TFALSE; }
 null                        { return TNULL; }
