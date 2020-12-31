@@ -1,7 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include "y.tab.h"
+#include "grammar.tab.h"
 %}
 %option noyywrap
 %option yylineno
