@@ -37,11 +37,9 @@ HashTable *symbolTable;
 %%
 
 program         : varDecls main funtions END            { printf("start\n%s%sstop\n", $1,$2); print_table(symbolTable); }
-                ;
 
 varDecls        :                                       { asprintf(&$$, "%s", "");}
                 | varDecls varDecl                      { asprintf(&$$, "%s%s", $1, $2); }
-                ;
 
 varDecl         : INT IDENTIFIER ';' {
                         asprintf(&$$, "pushi 0\npushi 0\nstoreg %d\n", globalCount);
@@ -64,43 +62,39 @@ varDecl         : INT IDENTIFIER ';' {
                     }
 
 main            : INT MAIN '(' ')' '{' statements '}'   { asprintf(&$$, "%s", $6); }
-                ;
 
 funtions        : 
                 | funtions function
-                ;
 
 function        : INT IDENTIFIER '(' ')' '{' statements '}' {
                         if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redefinition of '%s'\n", yylineno, $2);
                         ht_insert(symbolTable, $2, functionCount, "func");
                         functionCount++;
-                    };
+                    }
 
 statements      :                                       { asprintf(&$$, "%s", ""); }
                 | statements statement                  { asprintf(&$$, "%s%s", $1, $2); }
-                ;
 
 statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1); }
                 | ifThenStatement                       { asprintf(&$$, "%s", $1); }
                 | whileStatement                        { asprintf(&$$, "%s", $1); }
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
-                ;
 
 ifThenElseStmt  : IF '(' condition ')' '{' statements '}' ELSE '{' statements '}' { 
                         asprintf(&$$, "%sjz ELSE%d\n%sjump ENDIF%d\nELSE%d:\n%sENDIF%d:\n", $3, labelCount, $6, labelCount, labelCount, $10, labelCount); 
                         labelCount++; 
-                    };
+                    }
 
 ifThenStatement : IF '(' condition ')' '{' statements '}' { 
                         asprintf(&$$, "%sjz L%d\n%sL%d:\n", $3, labelCount, $6, labelCount); 
                         labelCount++; 
-                    };
+                    }
 
 whileStatement  : WHILE '(' condition ')' '{' statements '}' { 
                         asprintf(&$$, "WHILE%d:\n%sjz ENDWHILE%d\n%sjump WHILE%d\nENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); 
                         labelCount++; 
-                    };
+                    }
 
 letStatement    : LET varName '=' expression ';'    { 
                         asprintf(&$$, "%sstoreg %d\n", $4, ((ht_search(symbolTable, $2))->varPos));
@@ -116,7 +110,6 @@ expression      : constant                              { asprintf(&$$, "pushi %
                 | expression '-' expression             { asprintf(&$$, "%s%ssub\n", $1, $3); }
                 | expression '*' expression             { asprintf(&$$, "%s%smul\n", $1, $3); }
                 | expression '/' expression             { asprintf(&$$, "%s%sdiv\n", $1, $3); }
-                ;
 
 condition       : constant                              { asprintf(&$$, "pushi %d\n", $1); }
                 | IDENTIFIER {
@@ -133,13 +126,10 @@ condition       : constant                              { asprintf(&$$, "pushi %
                 | NOT condition                         { asprintf(&$$, "%spushi 1\nadd\npushi 2\nmod\n", $2); }
                 | condition AND condition               { asprintf(&$$, "%s%smul\n", $1, $3); }
                 | condition OR condition                { asprintf(&$$, "%s%sadd\npushi 2\nmod\n%s%smul\nadd\n", $1, $3, $1, $3); }
-                ;
 
 varName         : IDENTIFIER                            { asprintf(&$$, "%s", $1); }
-                ;
 
 constant        : INTEGERCONSTANT                       { $$ = $1; }
-                ;
 %%
 
 #include "lex.yy.c"
