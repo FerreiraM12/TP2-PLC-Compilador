@@ -13,10 +13,11 @@ int localCount = 0;
 int functionCount = 0;
 int labelCount;
 HashTable *symbolTable;
+
 %}
+%define parse.error verbose
 
 %union { char* str; int num; }
-
 %token INT MAIN LET IF ELSE WHILE END
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
@@ -83,7 +84,7 @@ statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1
                 | ifThenStatement                       { asprintf(&$$, "%s", $1); }
                 | whileStatement                        { asprintf(&$$, "%s", $1); }
                 | letStatement                          { asprintf(&$$, "%s", $1); }
-                | varDecl                               { asprintf(&$$, "%s", $1); }
+                | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
                 ;
 
 ifThenElseStmt  : IF '(' condition ')' '{' statements '}' ELSE '{' statements '}' { 
