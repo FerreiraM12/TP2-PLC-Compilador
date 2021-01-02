@@ -10,6 +10,7 @@ STRING              \"(\\.|[^"\\])*\"
 IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 %%
 main                        { return MAIN; }
+"read()"                    { return READ; }
 end                         { return END; }
 int                         { return INT; }
 let                         { return LET; }
