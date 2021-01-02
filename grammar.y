@@ -18,12 +18,12 @@ HashTable *symbolTable;
 %define parse.error verbose
 
 %union { char* str; int num; }
-%token INT MAIN LET IF ELSE WHILE END READ
+%token INT MAIN LET IF ELSE WHILE END READ PRINT
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
 
 %type <str> expression varName varDecl varDecls whileStatement letStatement statement statements main
-%type <str> ifThenElseStmt ifThenStatement condition
+%type <str> ifThenElseStmt ifThenStatement condition print
 %type <num> constant
 %right  '='                 
 %left   OR                  
@@ -97,6 +97,7 @@ statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1
                 | whileStatement                        { asprintf(&$$, "%s", $1); }
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
+                | print                                 { asprintf(&$$, "%s", $1); }
 
 ifThenElseStmt  : IF '(' condition ')' '{' statements '}' ELSE '{' statements '}' { 
                         asprintf(&$$, "%s"
@@ -135,6 +136,11 @@ letStatement    : LET varName '=' expression ';'    {
                         asprintf(&$$, "read\n"
                                       "atoi\n"
                                       "storeg %d\n", ((ht_search(symbolTable, $2))->varPos));
+                    }
+
+print           : PRINT '(' expression ')' ';'      {
+                        asprintf(&$$, "%s"
+                                      "writei\n", $3);
                     }
 
 expression      : constant                              { asprintf(&$$, "pushi %d\n", $1); }

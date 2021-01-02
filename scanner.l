@@ -9,21 +9,22 @@ INTEGER             \-?[0-9]+
 STRING              \"(\\.|[^"\\])*\"
 IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 %%
-main                        { return MAIN; }
+"main"                      { return MAIN; }
 "read()"                    { return READ; }
-end                         { return END; }
-int                         { return INT; }
-let                         { return LET; }
-if                          { return IF; }
-else                        { return ELSE; }
-while                       { return WHILE; }
-or                          { return OR; }
-and                         { return AND; }
+"print"                     { return PRINT; }
+"end"                       { return END; }
+"int"                       { return INT; }
+"let"                       { return LET; }
+"if"                        { return IF; }
+"else"                      { return ELSE; }
+"while"                     { return WHILE; }
+"or"                        { return OR; }
+"and"                       { return AND; }
 "=="                        { return EQ; }
 "!="                        { return NEQ; }
 ">="                        { return SUPEQ; }
 "<="                        { return INFEQ; }
-not                         { return NOT; }
+"not"                       { return NOT; }
 [{}()\.,;+\-*/&\|<>=~]      { return yytext[0]; }
 {INTEGER}                   { yylval.num = atoi(yytext); return INTEGERCONSTANT; }
 {IDENTIFIER}                { yylval.str = strdup(yytext); return IDENTIFIER; }
