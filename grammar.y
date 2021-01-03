@@ -18,7 +18,7 @@ HashTable *symbolTable;
 %define parse.error verbose
 
 %union { char* str; int num; }
-%token INT MAIN LET IF ELSE WHILE END READ PRINT
+%token INT MAIN LET IF ELSE WHILE READ PRINT
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
 
@@ -36,17 +36,18 @@ HashTable *symbolTable;
 
 %%
 
-program         : varDecls main funtions END            { printf("start\n"
-                                                                 "%s%s"
+program         : varDecls main                         { printf("%s"
+                                                                 "start\n"
+                                                                 "%s"
                                                                  "stop\n", $1,$2); print_table(symbolTable); }
 
 varDecls        :                                       { asprintf(&$$, "%s", "");}
-                | varDecls varDecl                      { asprintf(&$$, "%s%s", $1, $2); }
+
+                | varDecls varDecl                      { asprintf(&$$, "%s"
+                                                                        "%s", $1, $2); }
 
 varDecl         : INT IDENTIFIER ';' {
-                        asprintf(&$$, "pushi 0\n"
-                                      "pushi 0\n"
-                                      "storeg %d\n", globalCount);
+                        asprintf(&$$, "pushi 0\n");
                         if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
                         ht_insert(symbolTable, $2, globalCount, "int");
                         globalCount++;
@@ -68,29 +69,19 @@ varDecl         : INT IDENTIFIER ';' {
                         ht_insert(symbolTable, $2, globalCount, "int");
                         globalCount++;
                     }
-                | INT IDENTIFIER '=' READ ';' { 
-                        if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
-                        asprintf(&$$, "pushi 0\n"
-                                      "read\n"
-                                      "atoi\n"
-                                      "storeg %d\n", globalCount);
-                        ht_insert(symbolTable, $2, globalCount, "int");
-                        globalCount++;
+
+                | INT IDENTIFIER '[' constant ']' ';' {
+                        asprintf(&$$, "pushn %d\n", $4);
+                        ht_insert(symbolTable, $2, globalCount, "intArray");
+                        globalCount += $4;
                     }
 
 main            : INT MAIN '(' ')' '{' statements '}'   { asprintf(&$$, "%s", $6); }
 
-funtions        : 
-                | funtions function
-
-function        : INT IDENTIFIER '(' ')' '{' statements '}' {
-                        if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redefinition of '%s'\n", yylineno, $2);
-                        ht_insert(symbolTable, $2, functionCount, "func");
-                        functionCount++;
-                    }
-
 statements      :                                       { asprintf(&$$, "%s", ""); }
-                | statements statement                  { asprintf(&$$, "%s%s", $1, $2); }
+
+                | statements statement                  { asprintf(&$$, "%s"
+                                                                        "%s", $1, $2); }
 
 statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1); }
                 | ifThenStatement                       { asprintf(&$$, "%s", $1); }
@@ -132,11 +123,17 @@ letStatement    : LET varName '=' expression ';'    {
                         asprintf(&$$, "%s"
                                       "storeg %d\n", $4, ((ht_search(symbolTable, $2))->varPos));
                     }
-                | LET varName '=' READ ';' {
-                        asprintf(&$$, "read\n"
-                                      "atoi\n"
-                                      "storeg %d\n", ((ht_search(symbolTable, $2))->varPos));
+
+                | LET varName '[' expression ']' '=' expression ';' {
+                        asprintf(&$$, "pushgp\n"
+                                      "pushi %d\n"
+                                      "padd\n"
+                                      "%s"
+                                      "%s"
+                                      "storen\n", (ht_search(symbolTable, $2)->varPos), $4, $7);
                     }
+
+                    
 
 print           : PRINT '(' expression ')' ';'      {
                         asprintf(&$$, "%s"
@@ -145,9 +142,21 @@ print           : PRINT '(' expression ')' ';'      {
 
 expression      : constant                              { asprintf(&$$, "pushi %d\n", $1); }
                 | IDENTIFIER {
-                        if (hasDuplicates(symbolTable, $1) == 0) return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
+                        if (hasDuplicates(symbolTable, $1) == 0) return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                         asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos));
                     }
+                
+                | IDENTIFIER '[' expression ']' {
+                        asprintf(&$$, "pushgp\n"
+                                      "pushi %d\n"
+                                      "padd\n"
+                                      "%s"
+                                      "loadn\n", ((ht_search(symbolTable, $1))->varPos), $3);
+                    }
+
+                | READ                                  { asprintf(&$$, "read\n"
+                                                                        "atoi\n"); }
+                
                 | '(' expression ')'                    { asprintf(&$$, "%s", $2); }
 
                 | expression '+' expression             { asprintf(&$$, "%s%s"
