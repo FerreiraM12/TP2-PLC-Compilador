@@ -110,7 +110,7 @@ whileStatement  : WHILE '(' condition ')' '{' statements '}' {
                                                                         "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); 
                                                           labelCount++; }
 
-letStatement    : varName '=' expression ';'        { asprintf(&$$, "%s"
+letStatement    : varName '=' expression ';'            { asprintf(&$$, "%s"
                                                                         "storeg %d\n", $3, ((ht_search(symbolTable, $1))->varPos)); }
 
                 | varName '[' expression ']' '=' expression ';' {
