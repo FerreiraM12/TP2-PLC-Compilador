@@ -13,7 +13,6 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 "read()"                    { return READ; }
 "print"                     { return PRINT; }
 "int"                       { return INT; }
-"let"                       { return LET; }
 "if"                        { return IF; }
 "else"                      { return ELSE; }
 "while"                     { return WHILE; }
@@ -24,7 +23,7 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 ">="                        { return SUPEQ; }
 "<="                        { return INFEQ; }
 "not"                       { return NOT; }
-[\[\]{}()\.,;+\-*/&\|<>=~]  { return yytext[0]; }
+[\[\]{}();+\-*/<>=%]        { return yytext[0]; }
 {INTEGER}                   { yylval.num = atoi(yytext); return INTEGERCONSTANT; }
 {IDENTIFIER}                { yylval.str = strdup(yytext); return IDENTIFIER; }
 [ \t\n]                     { ; }
