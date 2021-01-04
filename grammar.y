@@ -133,7 +133,7 @@ expression      : constant                              { asprintf(&$$, "pushi %
                                                             return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
                 
-                | IDENTIFIER '[' expression ']'         { ](&$$, "pushgp\n"
+                | IDENTIFIER '[' expression ']'         { asprintf(&$$, "pushgp\n"
                                                                         "pushi %d\n"
                                                                         "padd\n"
                                                                         "%s"
