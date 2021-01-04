@@ -1,0 +1,12 @@
+int a = read();
+int b = read();
+int c = read();
+int d = read();
+int main() {
+  if (a==b and b==c and c==d) {
+    print(1);
+  }
+  else {
+    print(0);
+  }
+}

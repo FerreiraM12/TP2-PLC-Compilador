@@ -1,0 +1,15 @@
+int n = read();
+int menor;
+int temp;
+
+int main() {
+  menor = read();
+  while (n > 1) {
+    temp = read();
+    if (temp < menor) {
+      menor = temp;
+    }
+    n = n - 1;
+  }
+  print(menor);
+}

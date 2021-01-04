@@ -1,0 +1,27 @@
+pushi 0
+pushi 5
+storeg 0
+pushi 0
+start
+read
+atoi
+storeg 1
+WHILE0:
+pushg 0
+pushi 1
+sup
+jz ENDWHILE0
+pushg 1
+read
+atoi
+mul
+storeg 1
+pushg 0
+pushi 1
+sub
+storeg 0
+jump WHILE0
+ENDWHILE0:
+pushg 1
+writei
+stop

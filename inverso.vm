@@ -1,0 +1,43 @@
+pushn 10
+pushi 0
+start
+WHILE0:
+pushg 10
+pushi 10
+inf
+jz ENDWHILE0
+pushgp
+pushi 0
+padd
+pushg 10
+read
+atoi
+storen
+pushg 10
+pushi 1
+add
+storeg 10
+jump WHILE0
+ENDWHILE0:
+pushg 10
+pushi 1
+sub
+storeg 10
+WHILE1:
+pushg 10
+pushi 0
+sup
+jz ENDWHILE1
+pushgp
+pushi 0
+padd
+pushg 10
+loadn
+writei
+pushg 10
+pushi 1
+sub
+storeg 10
+jump WHILE1
+ENDWHILE1:
+stop

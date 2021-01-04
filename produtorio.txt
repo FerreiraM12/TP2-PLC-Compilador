@@ -1,0 +1,11 @@
+int n = 5;
+int prod;
+
+int main() {
+  prod = read();
+  while (n > 1) {
+    prod = prod * read();
+    n = n - 1;
+  }
+  print(prod);
+}
