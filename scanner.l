@@ -26,5 +26,7 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 [\[\]{}();+\-*/<>=%]        { return yytext[0]; }
 {INTEGER}                   { yylval.num = atoi(yytext); return INTEGERCONSTANT; }
 {IDENTIFIER}                { yylval.str = strdup(yytext); return IDENTIFIER; }
+"//".*                      { ; }
+"/*"([^*]|\*+[^*/])*\*+"/"  { ; }
 [ \t\n]                     { ; }
 %%

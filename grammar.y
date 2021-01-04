@@ -18,7 +18,7 @@ HashTable *symbolTable;
 %define parse.error verbose
 
 %union { char* str; int num; }
-%token INT MAIN IF ELSE WHILE READ PRINT MOD
+%token INT MAIN IF ELSE WHILE READ PRINT
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
 
@@ -69,7 +69,7 @@ varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0
                 | INT IDENTIFIER '[' constant ']' ';'   { asprintf(&$$, "pushn %d\n", $4);
                                                           ht_insert(symbolTable, $2, globalCount, "intArray");
                                                           globalCount += $4; }
-
+                                                          
 main            : INT MAIN '(' ')' '{' statements '}'   { asprintf(&$$, "%s", $6); }
 
 statements      :                                       { asprintf(&$$, "%s", ""); }
@@ -120,17 +120,14 @@ letStatement    : varName '=' expression ';'            { asprintf(&$$, "%s"
                                                                         "%s"
                                                                         "%s"
                                                                         "storen\n", (ht_search(symbolTable, $1)->varPos), $3, $6); }
-
-                    
-
-print           : PRINT '(' expression ')' ';'                      {
-                                                          asprintf(&$$, "%s"
+                                                                        
+print           : PRINT '(' expression ')' ';'          { asprintf(&$$, "%s"
                                                                         "writei\n", $3); }
 
 expression      : constant                              { asprintf(&$$, "pushi %d\n", $1); }
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
-                                                            return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
                 
                 | IDENTIFIER '[' expression ']'         { asprintf(&$$, "pushgp\n"
@@ -167,7 +164,7 @@ expression      : constant                              { asprintf(&$$, "pushi %
 condition       : constant                              { asprintf(&$$, "pushi %d\n", $1); }
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
-                                                            return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
 
                 | '(' condition ')'                     { asprintf(&$$, "%s", $2); }
