@@ -24,10 +24,11 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 ">="                        { return SUPEQ; }
 "<="                        { return INFEQ; }
 "not"                       { return NOT; }
-[\[\]{}();+\-*/<>=%,]       { return yytext[0]; }
+[\[\]{}();+\-*/<>=%]        { return yytext[0]; }
 {INTEGER}                   { yylval.num = atoi(yytext); return INTEGERCONSTANT; }
 {IDENTIFIER}                { yylval.str = strdup(yytext); return IDENTIFIER; }
 "//".*                      { ; }
 "/*"([^*]|\*+[^*/])*\*+"/"  { ; }
 [ \t\n]                     { ; }
+.                           { return yytext[0]; }
 %%
