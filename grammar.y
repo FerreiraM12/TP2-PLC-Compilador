@@ -14,17 +14,25 @@ int functionCount = 0;
 int labelCount;
 HashTable *symbolTable;
 
+typedef struct {
+    char *str;
+    int num;
+    char *funcs;
+} info;
+
 %}
 %define parse.error verbose
 
-%union { char* str; int num; }
-%token INT MAIN IF ELSE WHILE READ PRINT
+%union { char* str; int num; info info; }
+%token INT MAIN IF ELSE WHILE READ PRINT RETURN
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
 
-%type <str> expression varName varDecl varDecls whileStatement letStatement statement statements main
-%type <str> ifThenElseStmt ifThenStatement condition print
+%type <str> expression varName varDecl whileStatement letStatement statement statements main
+%type <str> ifThenElseStmt ifThenStatement condition print funcao functionCall
+%type <info> decls
 %type <num> constant
+
 %right  '='                 
 %left   OR                  
 %left   AND                 
@@ -36,16 +44,22 @@ HashTable *symbolTable;
 
 %%
 
-program         : varDecls main                         { printf("%s"
+program         : decls main                            { printf("// Declarations\n"
+                                                                 "%s"
+                                                                 "// Program\n"
                                                                  "start\n"
                                                                  "%s"
-                                                                 "stop\n", $1,$2);
-                                                                 /*print_table(symbolTable);*/ }
+                                                                 "stop\n\n"
+                                                                 "// Functions\n"
+                                                                 "%s", $1.str,$2, $1.funcs);
+                                                                 print_table(symbolTable); }
 
-varDecls        :                                       { asprintf(&$$, "%s", ""); }
+decls           :                                       { asprintf(&$$.str, "%s", ""); }
 
-                | varDecls varDecl                      { asprintf(&$$, "%s"
-                                                                        "%s", $1, $2); }
+                | decls varDecl                         { asprintf(&$$.str, "%s"
+                                                                            "%s", $1.str, $2); }
+
+                | decls funcao                          { asprintf(&$$.str, "%s\n", $1.str); asprintf(&$$.funcs, "%s\n", $2); }
 
 varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0\n");
                                                           if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
@@ -69,7 +83,15 @@ varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0
                 | INT IDENTIFIER '[' constant ']' ';'   { asprintf(&$$, "pushn %d\n", $4);
                                                           ht_insert(symbolTable, $2, globalCount, "intArray");
                                                           globalCount += $4; }
-                                                          
+
+funcao          : INT IDENTIFIER '(' ')' '{' statements RETURN expression ';' '}' {
+                                                          asprintf(&$$, "%s:\n"
+                                                                        "%s"
+                                                                        "%s"
+                                                                        "storel -1\n"
+                                                                        "return\n", $2, $6, $8);
+                                                        }
+                                                      
 main            : INT MAIN '(' ')' '{' statements '}'   { asprintf(&$$, "%s", $6); }
 
 statements      :                                       { asprintf(&$$, "%s", ""); }
@@ -83,6 +105,7 @@ statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
                 | print                                 { asprintf(&$$, "%s", $1); }
+                | functionCall                          { asprintf(&$$, "%s", $1); }
 
 ifThenElseStmt  : IF '(' condition ')' '{' statements '}' ELSE '{' statements '}' { 
                                                           asprintf(&$$, "%s"
@@ -120,9 +143,16 @@ letStatement    : varName '=' expression ';'            { asprintf(&$$, "%s"
                                                                         "%s"
                                                                         "%s"
                                                                         "storen\n", (ht_search(symbolTable, $1)->varPos), $3, $6); }
+
+                | varName '=' functionCall              { asprintf(&$$, "pushi 0\n"
+                                                                        "%s"
+                                                                        "storeg %d\n", $3, (ht_search(symbolTable, $1)->varPos)); }
                                                                         
 print           : PRINT '(' expression ')' ';'          { asprintf(&$$, "%s"
                                                                         "writei\n", $3); }
+
+functionCall    : varName '(' ')' ';'                   { asprintf(&$$, "pusha %s\n"
+                                                                        "call\n", $1); }
 
 expression      : constant                              { asprintf(&$$, "pushi %d\n", $1); }
 
