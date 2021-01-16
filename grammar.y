@@ -66,13 +66,6 @@ varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0
                                                           ht_insert(symbolTable, $2, globalCount, "int");
                                                           globalCount++; }
 
-                | INT IDENTIFIER '=' constant ';'       { asprintf(&$$, "pushi 0\n"
-                                                                        "pushi %d\n"
-                                                                        "storeg %d\n", $4, globalCount);
-                                                          if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
-                                                          ht_insert(symbolTable, $2, globalCount, "int");
-                                                          globalCount++; }
-
                 | INT IDENTIFIER '=' expression ';'     { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
                                                           asprintf(&$$, "pushi 0\n"
                                                                         "%s"
@@ -80,11 +73,14 @@ varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0
                                                           ht_insert(symbolTable, $2, globalCount, "int");
                                                           globalCount++; }
 
-                | INT IDENTIFIER '[' constant ']' ';'   { asprintf(&$$, "pushn %d\n", $4);
+                | INT IDENTIFIER '[' constant ']' ';'   { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
+                                                          asprintf(&$$, "pushn %d\n", $4);
                                                           ht_insert(symbolTable, $2, globalCount, "intArray");
                                                           globalCount += $4; }
 
 funcao          : INT IDENTIFIER '(' ')' '{' statements RETURN expression ';' '}' {
+                                                          if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
+                                                          ht_insert(symbolTable, $2, -1, "function");
                                                           asprintf(&$$, "%s:\n"
                                                                         "%s"
                                                                         "%s"
