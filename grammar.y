@@ -28,10 +28,9 @@ typedef struct {
 %token <num> INTEGERCONSTANT
 %token <str> IDENTIFIER
 
-%type <str> expression varName varDecl whileStatement letStatement statement statements main
+%type <str> expression varDecl whileStatement letStatement statement statements main
 %type <str> ifThenElseStmt ifThenStatement condition print funcao functionCall
 %type <info> decls
-%type <num> constant
 
 %right  '='                 
 %left   OR                  
@@ -45,16 +44,15 @@ typedef struct {
 %%
 
 program         : decls main                            { printf("// Declarations\n"
-                                                                 "%s"
+                                                                 "%s\n"
                                                                  "// Program\n"
                                                                  "start\n"
                                                                  "%s"
-                                                                 "stop\n\n"
-                                                                 "// Functions\n"
-                                                                 "%s", $1.str,$2, $1.funcs);
+                                                                 "stop\n\n", $1.str,$2);
+                                                                 if (strcmp($1.funcs, "") != 0) printf("// Functions\n%s", $1.funcs);
                                                                  print_table(symbolTable); }
 
-decls           :                                       { asprintf(&$$.str, "%s", ""); }
+decls           :                                       { asprintf(&$$.str, "%s", ""); asprintf(&$$.funcs, "%s", "");}
 
                 | decls varDecl                         { asprintf(&$$.str, "%s"
                                                                             "%s", $1.str, $2); }
@@ -73,7 +71,7 @@ varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0
                                                           ht_insert(symbolTable, $2, globalCount, "int");
                                                           globalCount++; }
 
-                | INT IDENTIFIER '[' constant ']' ';'   { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
+                | INT IDENTIFIER '[' INTEGERCONSTANT ']' ';'   { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
                                                           asprintf(&$$, "pushn %d\n", $4);
                                                           ht_insert(symbolTable, $2, globalCount, "intArray");
                                                           globalCount += $4; }
@@ -129,10 +127,15 @@ whileStatement  : WHILE '(' condition ')' '{' statements '}' {
                                                                         "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); 
                                                           labelCount++; }
 
-letStatement    : varName '=' expression ';'            { asprintf(&$$, "%s"
+letStatement    : IDENTIFIER '=' expression ';'            { 
+                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          asprintf(&$$, "%s"
                                                                         "storeg %d\n", $3, ((ht_search(symbolTable, $1))->varPos)); }
 
-                | varName '[' expression ']' '=' expression ';' {
+                | IDENTIFIER '[' expression ']' '=' expression ';' {
+                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "pushgp\n"
                                                                         "pushi %d\n"
                                                                         "padd\n"
@@ -140,23 +143,31 @@ letStatement    : varName '=' expression ';'            { asprintf(&$$, "%s"
                                                                         "%s"
                                                                         "storen\n", (ht_search(symbolTable, $1)->varPos), $3, $6); }
 
-                | varName '=' functionCall              { asprintf(&$$, "pushi 0\n"
+                | IDENTIFIER '=' functionCall              { 
+                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          asprintf(&$$, "pushi 0\n"
                                                                         "%s"
                                                                         "storeg %d\n", $3, (ht_search(symbolTable, $1)->varPos)); }
                                                                         
 print           : PRINT '(' expression ')' ';'          { asprintf(&$$, "%s"
                                                                         "writei\n", $3); }
 
-functionCall    : varName '(' ')' ';'                   { asprintf(&$$, "pusha %s\n"
+functionCall    : IDENTIFIER '(' ')' ';'                   { 
+                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          asprintf(&$$, "pusha %s\n"
                                                                         "call\n", $1); }
 
-expression      : constant                              { asprintf(&$$, "pushi %d\n", $1); }
+expression      : INTEGERCONSTANT                              { asprintf(&$$, "pushi %d\n", $1); }
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
                 
-                | IDENTIFIER '[' expression ']'         { asprintf(&$$, "pushgp\n"
+                | IDENTIFIER '[' expression ']'         { if (hasDuplicates(symbolTable, $1) == 0)
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          asprintf(&$$, "pushgp\n"
                                                                         "pushi %d\n"
                                                                         "padd\n"
                                                                         "%s"
@@ -187,7 +198,7 @@ expression      : constant                              { asprintf(&$$, "pushi %
                                                                         "%s"
                                                                         "MOD\n", $1, $3); }
 
-condition       : constant                              { asprintf(&$$, "pushi %d\n", $1); }
+condition       : INTEGERCONSTANT                              { asprintf(&$$, "pushi %d\n", $1); }
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
@@ -240,10 +251,6 @@ condition       : constant                              { asprintf(&$$, "pushi %
                                                                         "%s%s"
                                                                         "mul\n"
                                                                         "add\n", $1, $3, $1, $3); }
-
-varName         : IDENTIFIER                            { asprintf(&$$, "%s", $1); }
-
-constant        : INTEGERCONSTANT                       { $$ = $1; }
 
 
 %%
