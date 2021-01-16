@@ -1,0 +1,18 @@
+int b;
+int e;
+int c;
+int resultado;
+int potencia(){
+  b=read();
+  e=read();
+  c=b;
+  while(e>1){
+    b=c*b;
+    e=e - 1;
+  }
+  return b;
+}
+int main(){
+  resultado = potencia();
+}
+

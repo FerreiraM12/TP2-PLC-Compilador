@@ -1,0 +1,50 @@
+// Declarations
+pushi 0
+pushi 0
+pushi 0
+pushi 0
+
+// Program
+start
+pushi 0
+pusha potencia
+call
+storeg 3
+stop
+
+// Functions
+potencia:
+read
+atoi
+storeg 0
+read
+atoi
+storeg 1
+pushg 0
+storeg 2
+WHILE0:
+pushg 1
+pushi 1
+sup
+jz ENDWHILE0
+pushg 2
+pushg 0
+mul
+storeg 0
+pushg 1
+pushi 1
+sub
+storeg 1
+jump WHILE0
+ENDWHILE0:
+pushg 0
+storel -1
+return
+
+
+-------------------
+Index:98, identifier:b, varPos:0, type:int
+Index:99, identifier:c, varPos:2, type:int
+Index:101, identifier:e, varPos:1, type:int
+Index:979, identifier:resultado, varPos:3, type:int
+-------------------
