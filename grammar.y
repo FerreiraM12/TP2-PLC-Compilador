@@ -24,11 +24,11 @@ typedef struct {
 %define parse.error verbose
 
 %union { char* str; int num; info info; }
-%token INT MAIN IF ELSE WHILE READ PRINT RETURN
+%token INT MAIN IF ELSE WHILE DO UNTIL FOR READ PRINT RETURN
 %token <num> INTEGER
 %token <str> IDENTIFIER
 
-%type <str> expression varDecl whileStatement letStatement statement statements main
+%type <str> expression varDecl whileStatement doUntil forStatement letStatement statement statements main
 %type <str> ifThenElseStmt ifThenStatement condition print funcao functionCall
 %type <info> decls
 
@@ -94,6 +94,7 @@ statements      :                                       { asprintf(&$$, "%s", ""
 statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1); }
                 | ifThenStatement                       { asprintf(&$$, "%s", $1); }
                 | whileStatement                        { asprintf(&$$, "%s", $1); }
+                | forStatement                          { asprintf(&$$, "%s", $1); }
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
                 | print                                 { asprintf(&$$, "%s", $1); }
@@ -122,6 +123,11 @@ whileStatement  : WHILE '(' condition ')'
                                                                         "%s"
                                                                         "jump WHILE%d\n"
                                                                         "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); labelCount++}
+
+doUntil         : DO '{' statements '}' 
+                  UNTIL '(' condition ')'               { ; } 
+
+forStatement    : FOR '('                               { ; }
 
 letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
