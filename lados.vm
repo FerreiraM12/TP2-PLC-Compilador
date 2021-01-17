@@ -1,3 +1,4 @@
+// Declarations
 pushi 0
 read
 atoi
@@ -14,6 +15,8 @@ pushi 0
 read
 atoi
 storeg 3
+
+// Program
 start
 pushg 0
 pushg 1
@@ -26,12 +29,20 @@ pushg 2
 pushg 3
 equal
 mul
-jz ELSE0
+jz ELSE1
 pushi 1
 writei
-jump ENDIF0
-ELSE0:
+jump ENDIF1
+ELSE1:
 pushi 0
 writei
 ENDIF0:
 stop
+
+//Tabela de Símbolos
+//--------------------------------------
+//Index:97, identifier:a, varPos:0, type:int
+//Index:98, identifier:b, varPos:1, type:int
+//Index:99, identifier:c, varPos:2, type:int
+//Index:100, identifier:d, varPos:3, type:int
+//--------------------------------------

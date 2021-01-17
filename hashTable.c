@@ -234,7 +234,8 @@ void print_search(HashTable* table, char* identifier) {
 }
  
 void print_table(HashTable* table) {
-    printf("\n//-------------------\n");
+    printf("//Tabela de Símbolos");
+    printf("\n//--------------------------------------\n");
     for (int i=0; i<table->size; i++) {
         if (table->items[i]) {
             printf("//Index:%d, identifier:%s, varPos:%d, type:%s", i, table->items[i]->identifier, table->items[i]->varInfo->varPos, table->items[i]->varInfo->type);
@@ -249,7 +250,7 @@ void print_table(HashTable* table) {
             printf("\n");
         }
     }
-    printf("//-------------------\n");
+    printf("//--------------------------------------\n");
 }
 
 void ht_delete(HashTable* table, char* identifier) {

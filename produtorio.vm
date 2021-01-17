@@ -1,16 +1,19 @@
+// Declarations
 pushi 0
 pushi 5
 storeg 0
 pushi 0
+
+// Program
 start
 read
 atoi
 storeg 1
-WHILE0:
+WHILE1:
 pushg 0
 pushi 1
 sup
-jz ENDWHILE0
+jz ENDWHILE1
 pushg 1
 read
 atoi
@@ -20,8 +23,14 @@ pushg 0
 pushi 1
 sub
 storeg 0
-jump WHILE0
+jump WHILE1
 ENDWHILE0:
 pushg 1
 writei
 stop
+
+//Tabela de Símbolos
+//--------------------------------------
+//Index:110, identifier:n, varPos:0, type:int
+//Index:437, identifier:prod, varPos:1, type:int
+//--------------------------------------

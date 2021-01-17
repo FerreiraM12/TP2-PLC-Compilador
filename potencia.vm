@@ -4,6 +4,7 @@ pushi 0
 pushi 0
 pushi 0
 
+
 // Program
 start
 pushi 0
@@ -22,11 +23,11 @@ atoi
 storeg 1
 pushg 0
 storeg 2
-WHILE0:
+WHILE1:
 pushg 1
 pushi 1
 sup
-jz ENDWHILE0
+jz ENDWHILE1
 pushg 2
 pushg 0
 mul
@@ -35,16 +36,17 @@ pushg 1
 pushi 1
 sub
 storeg 1
-jump WHILE0
+jump WHILE1
 ENDWHILE0:
 pushg 0
 storel -1
 return
 
-
--------------------
-Index:98, identifier:b, varPos:0, type:int
-Index:99, identifier:c, varPos:2, type:int
-Index:101, identifier:e, varPos:1, type:int
-Index:979, identifier:resultado, varPos:3, type:int
--------------------
+//Tabela de Símbolos
+//--------------------------------------
+//Index:98, identifier:b, varPos:0, type:int
+//Index:99, identifier:c, varPos:2, type:int
+//Index:101, identifier:e, varPos:1, type:int
+//Index:851, identifier:potencia, varPos:-1, type:function
+//Index:979, identifier:resultado, varPos:3, type:int
+//--------------------------------------

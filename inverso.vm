@@ -1,11 +1,14 @@
+// Declarations
 pushn 10
 pushi 0
+
+// Program
 start
-WHILE0:
+WHILE1:
 pushg 10
 pushi 10
 inf
-jz ENDWHILE0
+jz ENDWHILE1
 pushgp
 pushi 0
 padd
@@ -17,17 +20,17 @@ pushg 10
 pushi 1
 add
 storeg 10
-jump WHILE0
+jump WHILE1
 ENDWHILE0:
 pushg 10
 pushi 1
 sub
 storeg 10
-WHILE1:
+WHILE2:
 pushg 10
 pushi 0
 sup
-jz ENDWHILE1
+jz ENDWHILE2
 pushgp
 pushi 0
 padd
@@ -38,6 +41,12 @@ pushg 10
 pushi 1
 sub
 storeg 10
-jump WHILE1
+jump WHILE2
 ENDWHILE1:
 stop
+
+//Tabela de Símbolos
+//--------------------------------------
+//Index:105, identifier:i, varPos:10, type:int
+//Index:118, identifier:v, varPos:0, type:intArray
+//--------------------------------------
