@@ -6,7 +6,6 @@
 %option noyywrap
 %option yylineno
 INTEGER             \-?[0-9]+
-STRING              \"(\\.|[^"\\])*\"
 IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 %%
 "main"                      { return MAIN; }
@@ -25,7 +24,7 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 "<="                        { return INFEQ; }
 "not"                       { return NOT; }
 [\[\]{}();+\-*/<>=%]        { return yytext[0]; }
-{INTEGER}                   { yylval.num = atoi(yytext); return INTEGERCONSTANT; }
+{INTEGER}                   { yylval.num = atoi(yytext); return INTEGER; }
 {IDENTIFIER}                { yylval.str = strdup(yytext); return IDENTIFIER; }
 "//".*                      { ; }
 "/*"([^*]|\*+[^*/])*\*+"/"  { ; }
