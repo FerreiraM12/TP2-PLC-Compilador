@@ -126,12 +126,33 @@ whileStatement  : WHILE '(' condition ')'
                                                                         "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); labelCount++; }
 
 doUntil         : UNTIL '(' condition ')' 
-                  '{' statements '}'                    { asprintf(&$$, "InitLabel%d:\n"
+                  '{' statements '}'                    { asprintf(&$$, "UNTIL%d:\n"
                                                                         "%s"
                                                                         "%s"
-                                                                        "jz InitLabel%d\n", labelCount, $6, $3, labelCount); labelCount++; } 
+                                                                        "jz UNTIL%d\n", labelCount, $6, $3, labelCount); labelCount++; } 
 
-forStatement    : FOR '('                               { ; }
+forStatement    : FOR '(' IDENTIFIER '=' expression ';' expression ')'
+                  '{' statements '}'                    { int varPos = ((ht_search(symbolTable, $3))->varPos);
+                                                          asprintf(&$$, "%s\n"
+                                                                        "storeg %d\n"
+                                                                        "FOR%d:\n"
+                                                                        "pushg %d\n"
+                                                                        "%s"
+                                                                        "equal\n"
+                                                                        "pushi 1\n"
+                                                                        "add\n"
+                                                                        "pushi 2\n"
+                                                                        "mod\n"
+                                                                        "jz ENDFOR%d\n"
+                                                                        "%s"
+                                                                        "pushg %d\n"
+                                                                        "pushi 1\n"
+                                                                        "add\n"
+                                                                        "storeg %d\n"
+                                                                        "jump FOR%d\n"
+                                                                        "ENDFOR%d:\n", $5, varPos, labelCount, varPos, $7, 
+                                                                        labelCount, $10, varPos, varPos, labelCount, labelCount); 
+                                                          labelCount++; }
 
 letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
