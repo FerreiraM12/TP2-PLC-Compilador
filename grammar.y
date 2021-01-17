@@ -24,11 +24,11 @@ typedef struct {
 %define parse.error verbose
 
 %union { char* str; int num; info info; }
-%token INT MAIN IF ELSE WHILE READ PRINT RETURN
+%token INT MAIN IF ELSE WHILE UNTIL FOR READ PRINT RETURN
 %token <num> INTEGER
 %token <str> IDENTIFIER
 
-%type <str> expression varDecl whileStatement letStatement statement statements main
+%type <str> expression varDecl whileStatement doUntil forStatement letStatement statement statements main
 %type <str> ifThenElseStmt ifThenStatement condition print funcao functionCall
 %type <info> decls
 
@@ -94,6 +94,8 @@ statements      :                                       { asprintf(&$$, "%s", ""
 statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1); }
                 | ifThenStatement                       { asprintf(&$$, "%s", $1); }
                 | whileStatement                        { asprintf(&$$, "%s", $1); }
+                | doUntil                               { asprintf(&$$, "%s", $1); }
+                | forStatement                          { asprintf(&$$, "%s", $1); }
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
                 | print                                 { asprintf(&$$, "%s", $1); }
@@ -122,6 +124,35 @@ whileStatement  : WHILE '(' condition ')'
                                                                         "%s"
                                                                         "jump WHILE%d\n"
                                                                         "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); labelCount++; }
+
+doUntil         : UNTIL '(' condition ')' 
+                  '{' statements '}'                    { asprintf(&$$, "UNTIL%d:\n"
+                                                                        "%s"
+                                                                        "%s"
+                                                                        "jz UNTIL%d\n", labelCount, $6, $3, labelCount); labelCount++; } 
+
+forStatement    : FOR '(' IDENTIFIER '=' expression ';' expression ')'
+                  '{' statements '}'                    { int varPos = ((ht_search(symbolTable, $3))->varPos);
+                                                          asprintf(&$$, "%s\n"
+                                                                        "storeg %d\n"
+                                                                        "FOR%d:\n"
+                                                                        "pushg %d\n"
+                                                                        "%s"
+                                                                        "equal\n"
+                                                                        "pushi 1\n"
+                                                                        "add\n"
+                                                                        "pushi 2\n"
+                                                                        "mod\n"
+                                                                        "jz ENDFOR%d\n"
+                                                                        "%s"
+                                                                        "pushg %d\n"
+                                                                        "pushi 1\n"
+                                                                        "add\n"
+                                                                        "storeg %d\n"
+                                                                        "jump FOR%d\n"
+                                                                        "ENDFOR%d:\n", $5, varPos, labelCount, varPos, $7, 
+                                                                        labelCount, $10, varPos, varPos, labelCount, labelCount); 
+                                                          labelCount++; }
 
 letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
