@@ -29,11 +29,11 @@ pushg 2
 pushg 3
 equal
 mul
-jz ELSE1
+jz ELSE0
 pushi 1
 writei
-jump ENDIF1
-ELSE1:
+jump ENDIF0
+ELSE0:
 pushi 0
 writei
 ENDIF0:

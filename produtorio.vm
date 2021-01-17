@@ -9,11 +9,11 @@ start
 read
 atoi
 storeg 1
-WHILE1:
+WHILE0:
 pushg 0
 pushi 1
 sup
-jz ENDWHILE1
+jz ENDWHILE0
 pushg 1
 read
 atoi
@@ -23,7 +23,7 @@ pushg 0
 pushi 1
 sub
 storeg 0
-jump WHILE1
+jump WHILE0
 ENDWHILE0:
 pushg 1
 writei

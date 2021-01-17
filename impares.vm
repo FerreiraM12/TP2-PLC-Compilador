@@ -6,11 +6,11 @@ pushi 0
 
 // Program
 start
-WHILE1:
+WHILE0:
 pushg 10
 pushi 10
 inf
-jz ENDWHILE1
+jz ENDWHILE0
 pushgp
 pushi 0
 padd
@@ -22,17 +22,17 @@ pushg 10
 pushi 1
 add
 storeg 10
-jump WHILE1
+jump WHILE0
 ENDWHILE0:
 pushg 10
 pushi 1
 sub
 storeg 10
-WHILE3:
+WHILE2:
 pushg 10
 pushi 0
 sup
-jz ENDWHILE3
+jz ENDWHILE2
 pushgp
 pushi 0
 padd
@@ -44,7 +44,7 @@ storeg 11
 pushg 11
 pushi 1
 equal
-jz L2
+jz L1
 pushgp
 pushi 0
 padd
@@ -60,7 +60,7 @@ pushg 10
 pushi 1
 sub
 storeg 10
-jump WHILE3
+jump WHILE2
 ENDWHILE2:
 stop
 

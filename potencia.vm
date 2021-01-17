@@ -23,11 +23,11 @@ atoi
 storeg 1
 pushg 0
 storeg 2
-WHILE1:
+WHILE0:
 pushg 1
 pushi 1
 sup
-jz ENDWHILE1
+jz ENDWHILE0
 pushg 2
 pushg 0
 mul
@@ -36,7 +36,7 @@ pushg 1
 pushi 1
 sub
 storeg 1
-jump WHILE1
+jump WHILE0
 ENDWHILE0:
 pushg 0
 storel -1
