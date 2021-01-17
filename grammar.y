@@ -24,7 +24,7 @@ typedef struct {
 %define parse.error verbose
 
 %union { char* str; int num; info info; }
-%token INT MAIN IF ELSE WHILE DO UNTIL FOR READ PRINT RETURN
+%token INT MAIN IF ELSE WHILE UNTIL FOR READ PRINT RETURN
 %token <num> INTEGER
 %token <str> IDENTIFIER
 
@@ -94,6 +94,7 @@ statements      :                                       { asprintf(&$$, "%s", ""
 statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1); }
                 | ifThenStatement                       { asprintf(&$$, "%s", $1); }
                 | whileStatement                        { asprintf(&$$, "%s", $1); }
+                | doUntil                               { asprintf(&$$, "%s", $1); }
                 | forStatement                          { asprintf(&$$, "%s", $1); }
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
@@ -108,13 +109,13 @@ ifThenElseStmt  : IF '(' condition ')'
                                                                         "jump ENDIF%d\n"
                                                                         "ELSE%d:\n"
                                                                         "%s"
-                                                                        "ENDIF%d:\n", $3, labelCount, $6, labelCount, labelCount, $10, labelCount); labelCount++}
+                                                                        "ENDIF%d:\n", $3, labelCount, $6, labelCount, labelCount, $10, labelCount); labelCount++; }
 
 ifThenStatement : IF '(' condition ')' 
                   '{' statements '}'                    { asprintf(&$$, "%s"
                                                                         "jz L%d\n"
                                                                         "%s"
-                                                                        "L%d:\n", $3, labelCount, $6, labelCount); labelCount++}
+                                                                        "L%d:\n", $3, labelCount, $6, labelCount); labelCount++; }
 
 whileStatement  : WHILE '(' condition ')' 
                   '{' statements '}'                    { asprintf(&$$, "WHILE%d:\n"
@@ -122,10 +123,13 @@ whileStatement  : WHILE '(' condition ')'
                                                                         "jz ENDWHILE%d\n"
                                                                         "%s"
                                                                         "jump WHILE%d\n"
-                                                                        "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); labelCount++}
+                                                                        "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); labelCount++; }
 
-doUntil         : DO '{' statements '}' 
-                  UNTIL '(' condition ')'               { ; } 
+doUntil         : UNTIL '(' condition ')' 
+                  '{' statements '}'                    { asprintf(&$$, "InitLabel%d:\n"
+                                                                        "%s"
+                                                                        "%s"
+                                                                        "jz InitLabel%d\n", labelCount, $6, $3, labelCount); labelCount++; } 
 
 forStatement    : FOR '('                               { ; }
 

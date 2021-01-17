@@ -17,7 +17,6 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 "else"                      { return ELSE; }
 "while"                     { return WHILE; }
 "for"                       { return FOR; }
-"do"                        { return DO; }
 "until"                     { return UNTIL; }
 "or"                        { return OR; }
 "and"                       { return AND; }
