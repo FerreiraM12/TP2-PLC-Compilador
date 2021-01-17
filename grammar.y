@@ -25,7 +25,7 @@ typedef struct {
 
 %union { char* str; int num; info info; }
 %token INT MAIN IF ELSE WHILE READ PRINT RETURN
-%token <num> INTEGERCONSTANT
+%token <num> INTEGER
 %token <str> IDENTIFIER
 
 %type <str> expression varDecl whileStatement letStatement statement statements main
@@ -59,32 +59,30 @@ decls           :                                       { asprintf(&$$.str, "%s"
 
                 | decls funcao                          { asprintf(&$$.str, "%s\n", $1.str); asprintf(&$$.funcs, "%s\n", $2); }
 
-varDecl         : INT IDENTIFIER ';'                    { asprintf(&$$, "pushi 0\n");
-                                                          if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
-                                                          ht_insert(symbolTable, $2, globalCount, "int");
-                                                          globalCount++; }
+varDecl         : INT IDENTIFIER ';'                    { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
+                                                          asprintf(&$$, "pushi 0\n");
+                                                          ht_insert(symbolTable, $2, globalCount++, "int"); }
 
                 | INT IDENTIFIER '=' expression ';'     { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
                                                           asprintf(&$$, "pushi 0\n"
                                                                         "%s"
                                                                         "storeg %d\n", $4, globalCount);
-                                                          ht_insert(symbolTable, $2, globalCount, "int");
-                                                          globalCount++; }
+                                                          ht_insert(symbolTable, $2, globalCount++, "int"); }
 
-                | INT IDENTIFIER '[' INTEGERCONSTANT ']' ';'   { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
+                | INT IDENTIFIER '[' INTEGER ']' ';'    { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
                                                           asprintf(&$$, "pushn %d\n", $4);
                                                           ht_insert(symbolTable, $2, globalCount, "intArray");
                                                           globalCount += $4; }
 
-funcao          : INT IDENTIFIER '(' ')' '{' statements RETURN expression ';' '}' {
-                                                          if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
+funcao          : INT IDENTIFIER '(' ')' '{' 
+                  statements 
+                  RETURN expression ';' '}'             { if (hasDuplicates(symbolTable, $2)) return fprintf(stderr, "%d: error: redeclaration of ‘%s’\n", yylineno, $2);
                                                           ht_insert(symbolTable, $2, -1, "function");
                                                           asprintf(&$$, "%s:\n"
                                                                         "%s"
                                                                         "%s"
                                                                         "storel -1\n"
-                                                                        "return\n", $2, $6, $8);
-                                                        }
+                                                                        "return\n", $2, $6, $8); }
                                                       
 main            : INT MAIN '(' ')' '{' statements '}'   { asprintf(&$$, "%s", $6); }
 
@@ -101,34 +99,31 @@ statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1
                 | print                                 { asprintf(&$$, "%s", $1); }
                 | functionCall                          { asprintf(&$$, "%s", $1); }
 
-ifThenElseStmt  : IF '(' condition ')' '{' statements '}' ELSE '{' statements '}' { 
-                                                          asprintf(&$$, "%s"
+ifThenElseStmt  : IF '(' condition ')' 
+                  '{' statements '}' 
+                  ELSE '{' statements '}'               { asprintf(&$$, "%s"
                                                                         "jz ELSE%d\n"
                                                                         "%s"
                                                                         "jump ENDIF%d\n"
                                                                         "ELSE%d:\n"
                                                                         "%s"
-                                                                        "ENDIF%d:\n", $3, labelCount, $6, labelCount, labelCount, $10, labelCount); 
-                                                          labelCount++; }
+                                                                        "ENDIF%d:\n", $3, labelCount, $6, labelCount, labelCount, $10, labelCount++); }
 
-ifThenStatement : IF '(' condition ')' '{' statements '}' { 
-                                                          asprintf(&$$, "%s"
+ifThenStatement : IF '(' condition ')' 
+                  '{' statements '}'                    { asprintf(&$$, "%s"
                                                                         "jz L%d\n"
                                                                         "%s"
-                                                                        "L%d:\n", $3, labelCount, $6, labelCount); 
-                                                          labelCount++; }
+                                                                        "L%d:\n", $3, labelCount, $6, labelCount++); }
 
-whileStatement  : WHILE '(' condition ')' '{' statements '}' { 
-                                                          asprintf(&$$, "WHILE%d:\n"
+whileStatement  : WHILE '(' condition ')' 
+                  '{' statements '}'                    { asprintf(&$$, "WHILE%d:\n"
                                                                         "%s"
                                                                         "jz ENDWHILE%d\n"
                                                                         "%s"
                                                                         "jump WHILE%d\n"
-                                                                        "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); 
-                                                          labelCount++; }
+                                                                        "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount++); }
 
-letStatement    : IDENTIFIER '=' expression ';'            { 
-                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "%s"
                                                                         "storeg %d\n", $3, ((ht_search(symbolTable, $1))->varPos)); }
@@ -143,8 +138,7 @@ letStatement    : IDENTIFIER '=' expression ';'            {
                                                                         "%s"
                                                                         "storen\n", (ht_search(symbolTable, $1)->varPos), $3, $6); }
 
-                | IDENTIFIER '=' functionCall              { 
-                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+                | IDENTIFIER '=' functionCall           { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "pushi 0\n"
                                                                         "%s"
@@ -153,13 +147,12 @@ letStatement    : IDENTIFIER '=' expression ';'            {
 print           : PRINT '(' expression ')' ';'          { asprintf(&$$, "%s"
                                                                         "writei\n", $3); }
 
-functionCall    : IDENTIFIER '(' ')' ';'                   { 
-                                                          if (hasDuplicates(symbolTable, $1) == 0) 
+functionCall    : IDENTIFIER '(' ')' ';'                { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
                                                           asprintf(&$$, "pusha %s\n"
                                                                         "call\n", $1); }
 
-expression      : INTEGERCONSTANT                              { asprintf(&$$, "pushi %d\n", $1); }
+expression      : INTEGER                               { asprintf(&$$, "pushi %d\n", $1); }
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
@@ -198,7 +191,7 @@ expression      : INTEGERCONSTANT                              { asprintf(&$$, "
                                                                         "%s"
                                                                         "MOD\n", $1, $3); }
 
-condition       : INTEGERCONSTANT                              { asprintf(&$$, "pushi %d\n", $1); }
+condition       : INTEGER                               { asprintf(&$$, "pushi %d\n", $1); }
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
@@ -251,7 +244,6 @@ condition       : INTEGERCONSTANT                              { asprintf(&$$, "
                                                                         "%s%s"
                                                                         "mul\n"
                                                                         "add\n", $1, $3, $1, $3); }
-
 
 %%
 
