@@ -107,13 +107,13 @@ ifThenElseStmt  : IF '(' condition ')'
                                                                         "jump ENDIF%d\n"
                                                                         "ELSE%d:\n"
                                                                         "%s"
-                                                                        "ENDIF%d:\n", $3, labelCount++, $6, labelCount, labelCount, $10, labelCount); }
+                                                                        "ENDIF%d:\n", $3, labelCount, $6, labelCount, labelCount, $10, labelCount); labelCount++}
 
 ifThenStatement : IF '(' condition ')' 
                   '{' statements '}'                    { asprintf(&$$, "%s"
                                                                         "jz L%d\n"
                                                                         "%s"
-                                                                        "L%d:\n", $3, labelCount++, $6, labelCount); }
+                                                                        "L%d:\n", $3, labelCount, $6, labelCount); labelCount++}
 
 whileStatement  : WHILE '(' condition ')' 
                   '{' statements '}'                    { asprintf(&$$, "WHILE%d:\n"
@@ -121,7 +121,7 @@ whileStatement  : WHILE '(' condition ')'
                                                                         "jz ENDWHILE%d\n"
                                                                         "%s"
                                                                         "jump WHILE%d\n"
-                                                                        "ENDWHILE%d:\n", labelCount++, $3, labelCount, $6, labelCount, labelCount); }
+                                                                        "ENDWHILE%d:\n", labelCount, $3, labelCount, $6, labelCount, labelCount); labelCount++}
 
 letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
