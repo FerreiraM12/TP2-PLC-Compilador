@@ -187,6 +187,8 @@ expression      : INTEGER                               { asprintf(&$$, "pushi %
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("intArray", ((ht_search(symbolTable, $1))->type)) == 0 );
+                                                          return fprintf(stderr, "%d: error: types don't match or the operation is invalid\n", yylineno, $1);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
                 
                 | IDENTIFIER '[' expression ']'         { if (hasDuplicates(symbolTable, $1) == 0)
