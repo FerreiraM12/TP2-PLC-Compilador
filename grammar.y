@@ -132,7 +132,9 @@ doUntil         : UNTIL '(' condition ')'
                                                                         "jz UNTIL%d\n", labelCount, $6, $3, labelCount); labelCount++; } 
 
 forStatement    : FOR '(' IDENTIFIER '=' expression ';' expression ')'
-                  '{' statements '}'                    { int varPos = ((ht_search(symbolTable, $3))->varPos);
+                  '{' statements '}'                    { if (strcmp("int", ((ht_search(symbolTable, $3))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
+                                                          int varPos = ((ht_search(symbolTable, $3))->varPos);
                                                           asprintf(&$$, "%s\n"
                                                                         "storeg %d\n"
                                                                         "FOR%d:\n"
@@ -156,12 +158,16 @@ forStatement    : FOR '(' IDENTIFIER '=' expression ';' expression ')'
 
 letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("int", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "%s"
                                                                         "storeg %d\n", $3, ((ht_search(symbolTable, $1))->varPos)); }
 
                 | IDENTIFIER '[' expression ']' '=' expression ';' {
                                                           if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("intArray", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pushgp\n"
                                                                         "pushi %d\n"
                                                                         "padd\n"
@@ -171,6 +177,8 @@ letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symb
 
                 | IDENTIFIER '=' functionCall           { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("function", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pushi 0\n"
                                                                         "%s"
                                                                         "storeg %d\n", $3, (ht_search(symbolTable, $1)->varPos)); }
@@ -180,6 +188,8 @@ print           : PRINT '(' expression ')' ';'          { asprintf(&$$, "%s"
 
 functionCall    : IDENTIFIER '(' ')' ';'                { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("function", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pusha %s\n"
                                                                         "call\n", $1); }
 
@@ -187,12 +197,14 @@ expression      : INTEGER                               { asprintf(&$$, "pushi %
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
-                                                          if (strcmp("intArray", ((ht_search(symbolTable, $1))->type)) == 0 );
-                                                          return fprintf(stderr, "%d: error: types don't match or the operation is invalid\n", yylineno, $1);
+                                                          if (strcmp("int", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
                 
                 | IDENTIFIER '[' expression ']'         { if (hasDuplicates(symbolTable, $1) == 0)
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("intArray", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pushgp\n"
                                                                         "pushi %d\n"
                                                                         "padd\n"
@@ -228,6 +240,8 @@ condition       : INTEGER                               { asprintf(&$$, "pushi %
 
                 | IDENTIFIER                            { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this function)\n", yylineno, $1);
+                                                          if (strcmp("int", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
 
                 | '(' condition ')'                     { asprintf(&$$, "%s", $2); }
