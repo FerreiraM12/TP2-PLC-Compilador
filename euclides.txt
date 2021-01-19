@@ -1,0 +1,20 @@
+int a;
+int b;
+int main() {
+  a = read();
+  b = read();
+  while (a > 0 and b > 0) {
+    if (b > a) {
+      b = b - a;
+    }
+    else {
+      a = a - b;
+    }
+  }
+  if (a > b) {
+    print(a);
+  }
+  else {
+    print(b);
+  }
+}

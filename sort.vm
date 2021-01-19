@@ -1,0 +1,133 @@
+// Declarations
+pushn 5
+pushi 0
+pushi 0
+pushi 0
+pushi 0
+pushi 5
+storeg 8
+
+// Program
+start
+pushi 0
+
+storeg 5
+FOR0:
+pushg 5
+pushg 8
+equal
+pushi 1
+add
+pushi 2
+mod
+jz ENDFOR0
+pushgp
+pushi 0
+padd
+pushg 5
+read
+atoi
+storen
+pushg 5
+pushi 1
+add
+storeg 5
+jump FOR0
+ENDFOR0:
+pushi 0
+storeg 5
+WHILE3:
+pushg 5
+pushg 8
+inf
+jz ENDWHILE3
+pushg 5
+pushi 1
+add
+storeg 6
+WHILE2:
+pushg 6
+pushg 8
+inf
+jz ENDWHILE2
+pushgp
+pushi 0
+padd
+pushg 5
+loadn
+pushgp
+pushi 0
+padd
+pushg 6
+loadn
+sup
+jz L1
+pushgp
+pushi 0
+padd
+pushg 5
+loadn
+storeg 7
+pushgp
+pushi 0
+padd
+pushg 5
+pushgp
+pushi 0
+padd
+pushg 6
+loadn
+storen
+pushgp
+pushi 0
+padd
+pushg 6
+pushg 7
+storen
+L1:
+pushg 6
+pushi 1
+add
+storeg 6
+jump WHILE2
+ENDWHILE2:
+pushg 5
+pushi 1
+add
+storeg 5
+jump WHILE3
+ENDWHILE3:
+pushi 0
+
+storeg 5
+FOR4:
+pushg 5
+pushg 8
+equal
+pushi 1
+add
+pushi 2
+mod
+jz ENDFOR4
+pushgp
+pushi 0
+padd
+pushg 5
+loadn
+writei
+pushg 5
+pushi 1
+add
+storeg 5
+jump FOR4
+ENDFOR4:
+stop
+
+//Tabela de Símbolos
+//--------------------------------------
+//Index:97, identifier:a, varPos:7, type:int
+//Index:105, identifier:i, varPos:5, type:int
+//Index:106, identifier:j, varPos:6, type:int
+//Index:110, identifier:n, varPos:8, type:int
+//Index:118, identifier:v, varPos:0, type:intArray
+//--------------------------------------
