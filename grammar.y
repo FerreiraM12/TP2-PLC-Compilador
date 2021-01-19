@@ -244,6 +244,16 @@ condition       : INTEGER                               { asprintf(&$$, "pushi %
                                                           return fprintf(stderr, "%d: error: types don't match\n", yylineno);
                                                           asprintf(&$$, "pushg %d\n", ((ht_search(symbolTable, $1))->varPos)); }
 
+                | IDENTIFIER '[' expression ']'         { if (hasDuplicates(symbolTable, $1) == 0)
+                                                          return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);
+                                                          if (strcmp("intArray", ((ht_search(symbolTable, $1))->type)) != 0 )
+                                                          return fprintf(stderr, "%d: error: types don't match\n", yylineno);
+                                                          asprintf(&$$, "pushgp\n"
+                                                                        "pushi %d\n"
+                                                                        "padd\n"
+                                                                        "%s"
+                                                                        "loadn\n", ((ht_search(symbolTable, $1))->varPos), $3); }
+
                 | '(' condition ')'                     { asprintf(&$$, "%s", $2); }
 
                 | condition '>' condition               { asprintf(&$$, "%s"
