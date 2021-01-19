@@ -1,0 +1,26 @@
+int v[5];
+int i;
+int j;
+int a;
+int n = 5;
+int main() {
+  for (i = 0; n) {
+    v[i] = read();
+  }
+  i = 0;
+  while (i < n) {
+    j = i + 1;
+    while (j < n) {
+      if (v[i] > v[j]) {
+        a = v[i];
+	v[i] = v[j];
+	v[j] = a;
+      }
+      j = j + 1;
+    }
+    i = i + 1;
+  }
+  for (i = 0; n) {
+    print(v[i]);
+  }
+}
