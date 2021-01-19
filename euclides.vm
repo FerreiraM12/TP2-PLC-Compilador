@@ -1,0 +1,56 @@
+// Declarations
+pushi 0
+pushi 0
+
+// Program
+start
+read
+atoi
+storeg 0
+read
+atoi
+storeg 1
+WHILE1:
+pushg 0
+pushi 0
+sup
+pushg 1
+pushi 0
+sup
+mul
+jz ENDWHILE1
+pushg 1
+pushg 0
+sup
+jz ELSE0
+pushg 1
+pushg 0
+sub
+storeg 1
+jump ENDIF0
+ELSE0:
+pushg 0
+pushg 1
+sub
+storeg 0
+ENDIF0:
+jump WHILE1
+ENDWHILE1:
+pushg 0
+pushg 1
+sup
+jz ELSE2
+pushg 0
+writei
+jump ENDIF2
+ELSE2:
+pushg 1
+writei
+ENDIF2:
+stop
+
+//Tabela de Símbolos
+//--------------------------------------
+//Index:97, identifier:a, varPos:0, type:int
+//Index:98, identifier:b, varPos:1, type:int
+//--------------------------------------
