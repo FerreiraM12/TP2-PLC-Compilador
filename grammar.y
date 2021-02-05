@@ -24,12 +24,12 @@ typedef struct {
 %define parse.error verbose
 
 %union { char* str; int num; info info; }
-%token INT MAIN IF ELSE WHILE UNTIL FOR READ PRINT RETURN
+%token INT MAIN IF ELSE WHILE UNTIL FOR READ PRINT RETURN PRINTSTR
 %token <num> INTEGER
-%token <str> IDENTIFIER
+%token <str> IDENTIFIER STRING
 
 %type <str> expression varDecl whileStatement doUntil forStatement letStatement statement statements main
-%type <str> ifThenElseStmt ifThenStatement condition print funcao functionCall
+%type <str> ifThenElseStmt ifThenStatement condition print funcao functionCall printStr
 %type <info> decls
 
 %right  '='                 
@@ -99,6 +99,7 @@ statement       : ifThenElseStmt                        { asprintf(&$$, "%s", $1
                 | letStatement                          { asprintf(&$$, "%s", $1); }
                 | varDecl                               { return fprintf(stderr, "%d: error: variables must be declared before any function\n", yylineno); }
                 | print                                 { asprintf(&$$, "%s", $1); }
+                | printStr                              { asprintf(&$$, "%s", $1); }
                 | functionCall                          { asprintf(&$$, "%s", $1); }
 
 ifThenElseStmt  : IF '(' condition ')' 
@@ -185,6 +186,9 @@ letStatement    : IDENTIFIER '=' expression ';'         { if (hasDuplicates(symb
                                                                         
 print           : PRINT '(' expression ')' ';'          { asprintf(&$$, "%s"
                                                                         "writei\n", $3); }
+
+printStr        : PRINTSTR STRING ';'                   { asprintf(&$$, "pushs %s\n"
+                                                                        "writes\n", $2); }
 
 functionCall    : IDENTIFIER '(' ')' ';'                { if (hasDuplicates(symbolTable, $1) == 0) 
                                                           return fprintf(stderr, "%d: error: ‘%s’ undeclared (first use in this program)\n", yylineno, $1);

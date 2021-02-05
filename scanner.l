@@ -7,11 +7,13 @@
 %option yylineno
 INTEGER             \-?[0-9]+
 IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
+STRING              \"(\\.|[^"\\])*\"
 %%
 "main"                      { return MAIN; }
 "return"                    { return RETURN; }
 "read()"                    { return READ; }
 "print"                     { return PRINT; }
+"printStr"                  { return PRINTSTR; }
 "int"                       { return INT; }
 "if"                        { return IF; }
 "else"                      { return ELSE; }
@@ -28,6 +30,7 @@ IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
 [\[\]{}();+\-*/<>=%]        { return yytext[0]; }
 {INTEGER}                   { yylval.num = atoi(yytext); return INTEGER; }
 {IDENTIFIER}                { yylval.str = strdup(yytext); return IDENTIFIER; }
+{STRING}                    { yylval.str = strdup(yytext); return STRING;}
 "//".*                      { ; }
 "/*"([^*]|\*+[^*/])*\*+"/"  { ; }
 [ \t\n]                     { ; }

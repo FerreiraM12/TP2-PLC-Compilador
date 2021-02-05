@@ -9,6 +9,8 @@ storeg 8
 
 // Program
 start
+pushs "Insira os inteiros:"
+writes
 pushi 0
 
 storeg 5
@@ -97,6 +99,8 @@ add
 storeg 5
 jump WHILE3
 ENDWHILE3:
+pushs "Array ordenado:"
+writes
 pushi 0
 
 storeg 5

@@ -4,6 +4,7 @@ int j;
 int a;
 int n = 5;
 int main() {
+  printStr "Insira os inteiros:";
   for (i = 0; n) {
     v[i] = read();
   }
@@ -20,6 +21,7 @@ int main() {
     }
     i = i + 1;
   }
+  printStr "Array ordenado:";
   for (i = 0; n) {
     print(v[i]);
   }
