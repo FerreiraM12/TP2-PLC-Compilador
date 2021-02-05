@@ -22,7 +22,7 @@ $ sudo apt-get install bison
 ```
 - Compilar o grammar.tab.c e hashTable.c e criar um executável
 ```
-/TP2-PLC-Compilador$ cc grammar.tab.c hashTable.c
+/TP2-PLC-Compilador$ cc -o compilador grammar.tab.c hashTable.c
 ```
 - Correr o programa no terminal
 ```
