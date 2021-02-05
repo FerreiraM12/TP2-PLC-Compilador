@@ -26,5 +26,5 @@ $ sudo apt-get install bison
 ```
 - Correr o programa no terminal
 ```
-/TP2-PLC-Compilador$ ./a.out
+/TP2-PLC-Compilador$ ./compilador
 ```
